@@ -21,7 +21,7 @@ namespace Rendering
 
         }
 
-        protected virtual void Update()
+        protected virtual void Update(float dt)
         {
 
         }
@@ -31,9 +31,9 @@ namespace Rendering
 
         }
 
-        public void Execute()
+        public void Execute(float dt)
         {
-            Update();
+            Update(dt);
         }
     }
 }

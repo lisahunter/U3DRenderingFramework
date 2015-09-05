@@ -7,7 +7,7 @@ namespace Rendering
 {
     public interface IRenderingNode
     {
-        void Execute();
+        void Execute(float dt);
         void Clear();
     }
 }

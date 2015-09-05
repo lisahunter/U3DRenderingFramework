@@ -10,9 +10,14 @@ namespace Rendering
     public class PostProcessUnit : IRenderingNode
     {
         private Shader m_postProcessShader;
+        private Material m_matScreenMat;
+        private Camera m_camProcessor;
 
-        public PostProcessUnit()
+        public PostProcessUnit(Shader shader)
         {
+            m_matScreenMat = RenderingMgr.Instance.ScreenInfo.ScreenMat;
+            m_camProcessor = RenderingMgr.Instance.ScreenInfo.ProcessCam;
+            m_postProcessShader = shader;
             Initialize();
         }
 
@@ -21,7 +26,7 @@ namespace Rendering
 
         }
 
-        protected virtual void Update()
+        protected virtual void Update(float dt)
         {
 
         }
@@ -31,9 +36,9 @@ namespace Rendering
 
         }
 
-        public void Execute()
+        public void Execute(float dt)
         {
-            Update();
+            Update(dt);
         }
     }
 }
