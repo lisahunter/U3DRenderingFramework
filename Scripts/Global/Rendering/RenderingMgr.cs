@@ -30,6 +30,7 @@ namespace Rendering
         private RenderTexture m_rtCustomFramBuffer;
         private LinkedList<IRenderingNode> m_llRenderingNodeList;
         private Camera m_camProcessor;
+        private RenderingDriver m_driver;
         private ScreenStruct m_csScreen;
         private Ticker m_ticker;
 
@@ -42,6 +43,22 @@ namespace Rendering
 
         private void Initialize()
         {
+            CreateRenderScreen();
+
+            /**************** Initiating Custom Frame Buffer ****************/
+            //tmp resoultion r1280x720
+            m_rtCustomFramBuffer = new RenderTexture(1280, 720, 24);
+            m_csScreen.RawImgComp.texture = m_rtCustomFramBuffer;
+            m_csScreen.ScreenMat = new Material(Shader.Find("UI/Default"));
+            m_csScreen.RawImgComp.material = m_csScreen.ScreenMat;
+            /**************** Initiating Custom Frame Buffer ****************/
+
+
+            ResumeRendering();
+        }
+
+        private void CreateRenderScreen()
+        {
             /**************** Initiating GameObjects ****************/
             m_csScreen.CanvasObj = new GameObject();
             m_csScreen.CanvasObj.name = "Screen";
@@ -52,11 +69,12 @@ namespace Rendering
             m_csScreen.CameraObj = new GameObject();
             m_csScreen.CameraObj.name = "ProcessCam";
             m_csScreen.ProcessCam = m_csScreen.CameraObj.AddComponent<Camera>();
+            m_driver = m_csScreen.CameraObj.AddComponent<RenderingDriver>();
+            m_camProcessor = m_csScreen.ProcessCam;
             m_csScreen.CameraObj.transform.SetParent(m_csScreen.CanvasObj.transform, false);
             m_csScreen.CameraObj.transform.localPosition = new Vector3(0.0f, 0.0f, -100.0f);
             m_csScreen.ProcessCam.orthographic = true;
             m_csScreen.ProcessCam.farClipPlane = 10.0f;
-            m_csScreen.ProcessCam.enabled = false;
             m_csScreen.CanvasComp.worldCamera = m_csScreen.ProcessCam;
             m_csScreen.RawImgObj = new GameObject();
             m_csScreen.RawImgObj.name = "RawImage";
@@ -68,14 +86,6 @@ namespace Rendering
             rawImgRect.offsetMax = Vector2.zero;
             m_csScreen.RawImgComp = m_csScreen.RawImgObj.AddComponent<RawImage>();
             /**************** Initiating GameObjects ****************/
-
-            /**************** Initiating Custom Frame Buffer ****************/
-            //tmp resoultion r1280x720
-            m_rtCustomFramBuffer = new RenderTexture(1280, 720, 24);
-            m_csScreen.RawImgComp.texture = m_rtCustomFramBuffer;
-            m_csScreen.ScreenMat = new Material(Shader.Find("UI/Default"));
-            m_csScreen.RawImgComp.material = m_csScreen.ScreenMat;
-            /**************** Initiating Custom Frame Buffer ****************/
         }
 
         private void ExecuteNodeList(float dt)
@@ -86,13 +96,14 @@ namespace Rendering
             {
                 iter.Value.Execute(dt);
             }
+
+            //finish processing, copy the CFrameBuffer to the real fram buffer
             m_camProcessor.targetTexture = null;
-            m_camProcessor.Render();
         }
 
         private void ForceTerminateRendering()
         {
-            m_camProcessor = null;
+            m_camProcessor.targetTexture = null;
             m_csScreen.RawImgComp.texture = null;
             if (m_rtCustomFramBuffer != null)
             {
@@ -101,11 +112,13 @@ namespace Rendering
             }
 
             //remove ExecuteNodeList from ticker
+            m_driver.onPreRender = null;
         }
 
         private void ResumeRendering()
         {
             //Add ExecuteNodeList to ticker
+            m_driver.onPreRender = ExecuteNodeList;
         }
 
         public RenderTexture CFrameBuffer
