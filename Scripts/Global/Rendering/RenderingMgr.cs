@@ -89,16 +89,19 @@ namespace Rendering
 
         private void ExecuteNodeList(float dt)
         {
-            m_camProcessor.targetTexture = m_rtCustomFramBuffer;
-            LinkedListNode<IRenderingNode> iter = m_llRenderingNodeList.First;
-            for (; iter != null; iter = iter.Next)
+            if (m_llRenderingNodeList.Count > 0)
             {
-                // if no next node, render to frame buffer immediately
-                iter.Value.Execute(dt, iter.Next == null);
-            }
+                m_camProcessor.targetTexture = m_rtCustomFramBuffer;
+                LinkedListNode<IRenderingNode> iter = m_llRenderingNodeList.First;
+                for (; iter != null; iter = iter.Next)
+                {
+                    // if no next node, render to frame buffer immediately
+                    iter.Value.Execute(dt, iter.Next == null);
+                }
 
-            //finish processing, copy the CFrameBuffer to the real frame buffer
-            //m_camProcessor.targetTexture = null;
+                //finish processing, copy the CFrameBuffer to the real frame buffer
+                //m_camProcessor.targetTexture = null;
+            }
         }
 
         private void ForceTerminateRendering()

@@ -28,7 +28,7 @@ namespace Rendering
 
         /// <summary>
         /// call before execute called
-        /// </summary>
+        /// </summary> 
         /// <param name="dt"></param>
         protected virtual void Update(float dt)
         {
