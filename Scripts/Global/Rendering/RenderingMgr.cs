@@ -16,13 +16,14 @@ namespace Rendering
         public Canvas CanvasComp;
         public Camera ProcessCam;
         public RawImage RawImgComp;
-        public Material ScreenMat;
+        public Material DefaultMat;
     };
 
     public enum RESOLUTION
     {
         R1280x720 = 0,
-        R1920x1080 = 1
+        R1920x1080 = 1,
+        R1680x1050 = 2
     }
 
     public class RenderingMgr : Singleton<RenderingMgr>
@@ -47,10 +48,7 @@ namespace Rendering
 
             /**************** Initiating Custom Frame Buffer ****************/
             //tmp resoultion r1280x720
-            m_rtCustomFramBuffer = new RenderTexture(1280, 720, 24);
-            m_csScreen.RawImgComp.texture = m_rtCustomFramBuffer;
-            m_csScreen.ScreenMat = new Material(Shader.Find("UI/Default"));
-            m_csScreen.RawImgComp.material = m_csScreen.ScreenMat;
+            SetResolution(RESOLUTION.R1280x720);
             /**************** Initiating Custom Frame Buffer ****************/
 
 
@@ -86,6 +84,7 @@ namespace Rendering
             rawImgRect.offsetMax = Vector2.zero;
             m_csScreen.RawImgComp = m_csScreen.RawImgObj.AddComponent<RawImage>();
             /**************** Initiating GameObjects ****************/
+            m_csScreen.DefaultMat = new Material(Shader.Find("UI/Default"));
         }
 
         private void ExecuteNodeList(float dt)
@@ -94,11 +93,12 @@ namespace Rendering
             LinkedListNode<IRenderingNode> iter = m_llRenderingNodeList.First;
             for (; iter != null; iter = iter.Next)
             {
-                iter.Value.Execute(dt);
+                // if no next node, render to frame buffer immediately
+                iter.Value.Execute(dt, iter.Next == null);
             }
 
-            //finish processing, copy the CFrameBuffer to the real fram buffer
-            m_camProcessor.targetTexture = null;
+            //finish processing, copy the CFrameBuffer to the real frame buffer
+            //m_camProcessor.targetTexture = null;
         }
 
         private void ForceTerminateRendering()
@@ -118,6 +118,7 @@ namespace Rendering
         private void ResumeRendering()
         {
             //Add ExecuteNodeList to ticker
+            //TODO: got to reset all rendering unit's camera's target texture
             m_driver.onPreRender = ExecuteNodeList;
         }
 
@@ -143,20 +144,48 @@ namespace Rendering
             switch(r)
             {
                 case RESOLUTION.R1280x720:
+                    m_rtCustomFramBuffer = new RenderTexture(1280, 720, 24);
+                    break;
+                case RESOLUTION.R1680x1050:
+                    m_rtCustomFramBuffer = new RenderTexture(1680, 1050, 24);
                     break;
                 case RESOLUTION.R1920x1080:
+                    m_rtCustomFramBuffer = new RenderTexture(1920, 1080, 24);
+                    break;
+                default:
+                    m_rtCustomFramBuffer = new RenderTexture(1280, 720, 24);
                     break;
             }
+            m_csScreen.RawImgComp.texture = m_rtCustomFramBuffer;
+            m_csScreen.RawImgComp.material = m_csScreen.DefaultMat;
         }
 
-        public void AddNodeAtFirst(IRenderingNode unit)
+        public void AddUnitAtFirst(IRenderingNode unit)
         {
             m_llRenderingNodeList.AddFirst(unit);
+            unit.Initialize();
         }
 
-        public void AddNodeAtLast(IRenderingNode unit)
+        public void AddUnitAtLast(IRenderingNode unit)
         {
             m_llRenderingNodeList.AddLast(unit);
+            unit.Initialize();
+        }
+
+        public void AddUnitAfterNode(IRenderingNode unit, LinkedListNode<IRenderingNode> node)
+        {
+            if (node == null || unit == null)
+                return;
+            m_llRenderingNodeList.AddAfter(node, unit);
+            unit.Initialize();
+        }
+
+        public void AddUnitBeforeNode(IRenderingNode unit, LinkedListNode<IRenderingNode> node)
+        {
+            if (node == null || unit == null)
+                return;
+            m_llRenderingNodeList.AddBefore(node, unit);
+            unit.Initialize();
         }
 
         public void RemoveNode(IRenderingNode unit)
