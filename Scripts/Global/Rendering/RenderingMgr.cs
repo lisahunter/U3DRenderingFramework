@@ -26,7 +26,7 @@ namespace Rendering
         R1680x1050 = 2
     }
 
-    public class RenderingMgr : Singleton<RenderingMgr>
+    public partial class RenderingMgr : Singleton<RenderingMgr>
     {
         private RenderTexture m_rtCustomFramBuffer;
         private LinkedList<IRenderingNode> m_llRenderingNodeList;
@@ -34,10 +34,12 @@ namespace Rendering
         private RenderingDriver m_driver;
         private ScreenStruct m_csScreen;
         private Ticker m_ticker;
+        private Dictionary<string, LinkedListNode<IRenderingNode>> m_dicCrucialNodes;
 
 
         public RenderingMgr()
         {
+            m_dicCrucialNodes = new Dictionary<string, LinkedListNode<IRenderingNode>>();
             m_llRenderingNodeList = new LinkedList<IRenderingNode>();
             Initialize();
         }
@@ -167,42 +169,5 @@ namespace Rendering
             m_csScreen.RawImgComp.material = m_csScreen.DefaultMat;
         }
 
-        public void AddUnitAtFirst(IRenderingNode unit)
-        {
-            m_llRenderingNodeList.AddFirst(unit);
-            unit.Initialize();
-        }
-
-        public void AddUnitAtLast(IRenderingNode unit)
-        {
-            m_llRenderingNodeList.AddLast(unit);
-            unit.Initialize();
-        }
-
-        public void AddUnitAfterNode(IRenderingNode unit, LinkedListNode<IRenderingNode> node)
-        {
-            if (node == null || unit == null)
-                return;
-            m_llRenderingNodeList.AddAfter(node, unit);
-            unit.Initialize();
-        }
-
-        public void AddUnitBeforeNode(IRenderingNode unit, LinkedListNode<IRenderingNode> node)
-        {
-            if (node == null || unit == null)
-                return;
-            m_llRenderingNodeList.AddBefore(node, unit);
-            unit.Initialize();
-        }
-
-        public void RemoveNode(IRenderingNode unit)
-        {
-            LinkedListNode<IRenderingNode> node = m_llRenderingNodeList.Find(unit);
-            if (node == null)
-                return;
-
-            node.Value.Clear();
-            m_llRenderingNodeList.Remove(node);
-        }
     }
 }

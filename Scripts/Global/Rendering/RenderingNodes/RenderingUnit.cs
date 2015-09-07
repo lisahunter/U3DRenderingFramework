@@ -14,6 +14,7 @@ namespace Rendering
         public RenderingUnit(Camera targetCam)
         {
             m_camTarget = targetCam;
+            m_camTarget.enabled = false;
             Reset();
         }
 
