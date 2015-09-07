@@ -14,8 +14,7 @@ namespace Rendering
         public RenderingUnit(Camera targetCam)
         {
             m_camTarget = targetCam;
-            m_camTarget.targetTexture = RenderingMgr.Instance.CFrameBuffer;
-            m_camProcessor = RenderingMgr.Instance.ScreenInfo.ProcessCam;
+            Reset();
         }
 
         /// <summary>
@@ -24,6 +23,15 @@ namespace Rendering
         public virtual void Initialize()
         {
 
+        }
+
+        /// <summary>
+        /// call when rendering mgr is calling resume function
+        /// </summary>
+        public virtual void Reset()
+        {
+            m_camTarget.targetTexture = RenderingMgr.Instance.CFrameBuffer;
+            m_camProcessor = RenderingMgr.Instance.ScreenInfo.ProcessCam;
         }
 
         /// <summary>

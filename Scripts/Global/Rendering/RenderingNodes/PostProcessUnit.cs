@@ -15,7 +15,7 @@ namespace Rendering
 
         public PostProcessUnit()
         {
-            m_camProcessor = RenderingMgr.Instance.ScreenInfo.ProcessCam;
+            Reset();
         }
 
         /// <summary>
@@ -24,6 +24,14 @@ namespace Rendering
         public virtual void Initialize()
         {
             
+        }
+
+        /// <summary>
+        /// call when rendering mgr is calling resume function
+        /// </summary>
+        public virtual void Reset()
+        {
+            m_camProcessor = RenderingMgr.Instance.ScreenInfo.ProcessCam;
         }
 
         /// <summary>

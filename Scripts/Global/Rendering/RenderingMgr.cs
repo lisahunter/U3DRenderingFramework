@@ -121,7 +121,11 @@ namespace Rendering
         private void ResumeRendering()
         {
             //Add ExecuteNodeList to ticker
-            //TODO: got to reset all rendering unit's camera's target texture
+            LinkedListNode<IRenderingNode> iter = m_llRenderingNodeList.First;
+            for (; iter != null; iter = iter.Next)
+            {
+                iter.Value.Reset();
+            }
             m_driver.onPreRender = ExecuteNodeList;
         }
 
